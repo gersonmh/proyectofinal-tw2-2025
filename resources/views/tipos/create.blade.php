@@ -36,7 +36,7 @@
                         <div class="card-body">
                             <form id="formCrearTipo" method="POST" action="{{ route('tipos.store') }}">
                                 @csrf
-                                
+
                                 <div class="mb-4">
                                     <label for="tipo" class="form-label fw-semibold">
                                         <i class="bi bi-person-badge text-primary me-1"></i>
@@ -122,17 +122,41 @@
             btn.html('<i class="bi bi-check-circle me-1"></i> Crear Usuario').prop("disabled", false);
         }
     }
+    function actualizarPreview(tipo){
+        const preview = $("#previewTipo");
+        const badgePreview = $("#badgePreview");
+        
+        if( tipo.trim() ){
+            // Determinar color del badge según el tipo
+            let colorClass = "bg-secondary";
+            if(tipo.toLowerCase() === "admin") colorClass = "bg-danger";
+            else if(tipo.toLowerCase() === "profesor") colorClass = "bg-success";
+            else if(tipo.toLowerCase() === "estudiante") colorClass = "bg-primary";
+            else if(tipo.toLowerCase() === "coordinador") colorClass = "bg-warning";
+            
+            const badge = `<span class="badge ${colorClass} fs-6">
+                <i class="bi bi-person-badge me-1"></i>${tipo}
+            </span>`;
+            
+            badgePreview.html(badge);
+            preview.slideDown();
+        }
+        else{
+            preview.slideUp();
+        }
+    }
 </script>
 @endpush
 
 @push('JSOR')
     $("#tipo").on("input", function(){
-        //
+        actualizarPreview($(this).val());
     });
     $(".ejemplo-tipo").on("click", function(){
-        //
+        const tipo = $(this).data("tipo");
+        $("#tipo").val(tipo).trigger("input");
     });
-    
+
     // Manejo del formulario
     $("#formCrearTipo").on("submit", function(e){
         e.preventDefault();
@@ -170,6 +194,6 @@
             }
         });
     });
-    
+
     console.log("Vista crear usuario cargada");
 @endpush
