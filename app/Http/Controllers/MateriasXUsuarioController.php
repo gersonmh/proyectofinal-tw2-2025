@@ -19,17 +19,17 @@ class MateriasXUsuarioController extends Controller
         ->get();
         foreach( $materiasAsignadas as $asignacion ){
             $promedio = $asignacion->calificaciones->avg('calificaciones');
-            $asignacion->promedio = $promedio ? round( $promedio, 2) : 0;
+            $asignacion->promedio = $promedio ? round( $promedio, 2 ) : 0;
         }
         $materiasAsignadasIds = $materiasAsignadas->pluck('materias_id')->toArray();
-        $materiasDisponibles = Materia::WhereNotIn('id', $materiasAsignadasIds)->get();
+        $materiasDisponibles = Materia::whereNotIn('id', $materiasAsignadasIds)->get();
         return view('materiasxusuario.index', compact('usuario', 'materiasAsignadas', 'materiasDisponibles'));
     }
     function asignar(Request $request, $id){
-        $validator = Validator::make($request->all, [
-            'materia_id' => 'required|exists:materias,id',
+        $validator = Validator::make($request->all(), [
+            'materia_id' => 'required|exists:materias,id'
         ]);
-        if ($validator->fails() ){
+        if( $validator->fails() ){
             return response()->json([
                 'success' => false,
                 'errors' => $validator->errors()
@@ -42,22 +42,22 @@ class MateriasXUsuarioController extends Controller
             if( $existe ){
                 return response()->json([
                     'success' => false,
-                    'message' => 'Esta materia ya esta asignada a este usuario.'
+                    'message' => 'Esta materia ya está asignada a este usuario'
                 ], 400);
             }
             MateriasXUsuario::create([
                 'materias_id' => $request->materia_id,
-                'users_id' => $id,
+                'users_id' => $id
             ]);
             return response()->json([
                 'success' => true,
-                'message' => 'Materia asignada correctamente.'
+                'message' => 'Materia asignada correctamente'
             ]);
         }
-        catch( \Exception $e) {
+        catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al asignar la materia.'
+                'message' => 'Error al asignar la materia'
             ], 500);
         }
     }
@@ -65,14 +65,13 @@ class MateriasXUsuarioController extends Controller
         try{
             $asignacion = MateriasXUsuario::findOrFail($asignacion_id);
             $usuario_id = $asignacion->users_id;
-
             Calificacion::where('materias_x_usuarios_id', $asignacion_id)->delete();
             $asignacion->delete();
             return redirect()
-            ->route('materiasxusuarios.index', $usuario_id)
+            ->route('materiasxusuario.index', $usuario_id)
             ->with('success', 'Materia desasignada correctamente');
         }
-        catch( \Exception $e) {
+        catch (\Exception $e) {
             return redirect()
             ->back()
             ->with('error', 'Error al desasignar la materia');
